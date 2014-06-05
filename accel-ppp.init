@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# accel-pppd: Starts the PPPoE Server.
+#
+# chkconfig: 2345 10 92
+# description:  pppoe-server is a user-space server for PPPoE (Point-to-Point Protocol over Eth- \
+#               The ACCEL-PPP v1.0 is completly new implementation of PPTP/PPPoE/L2TP which was \ 
+#               written from scratch.
+#               ACCEL-PPP uses only kernel-mode implementations of pptp/l2tp/pppoe.
+# processname:  /usr/sbin/accel-pppd
+# config:       /etc/accel-ppp.conf
+
+. /etc/rc.d/init.d/functions
+RETVAL=0
+
+PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/local/sbin;
+ACCEL_PPTPD="/usr/sbin/accel-pppd"
+ACCEL_PPTPD_OPTS="-c /etc/accel-ppp.conf -d"
+
+check() {
+        # Check that we're a privileged user
+        [ `id -u` = 0 ] || exit 4
+        # Check if accel-pppd is executable
+        test -x $ACCEL_PPTPD || exit 5
+}
+
+start() {
+        check
+        echo -n $"Starting $ACCEL_PPTPD: "
+        daemon $ACCEL_PPTPD $ACCEL_PPTPD_OPTS
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/accel-pppd
+        return $RETVAL
+}
+
+stop() {
+       check
+        echo -n $"Stopping $ACCEL_PPTPD: "
+        killproc $ACCEL_PPTPD
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/accel-pppd
+        return $RETVAL
+}
+
+restart() {
+        stop
+        start
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        restart
+        ;;
+    reload)
+        echo "$0: Unimplemented feature."
+        RETVAL=3
+        ;;
+    force-reload)
+        echo "$0: Unimplemented feature."
+        RETVAL=3
+        ;;
+    condrestart)
+        if [ -f /var/lock/subsys/accel-pppd ]; then
+            restart
+        fi
+        ;;
+    status)
+        status accel-pppd
+        RETVAL=$?
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|reload|force-reload}"
+        RETVAL=3
+        ;;
+esac
+
+exit $RETVAL
+
