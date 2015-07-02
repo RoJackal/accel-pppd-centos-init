@@ -10,6 +10,15 @@
 # processname:  /usr/sbin/accel-pppd
 # config:       /etc/accel-ppp.conf
 
+### BEGIN INIT INFO
+# Provides: accel-pppd 
+# Required-Start: network 
+# Default-Start:  2345
+# Default-Stop: 90
+# Short-Description: accel-pppd daemon 
+# Description: accel-pppd daemon for ppp  
+### END INIT INFO
+
 . /etc/rc.d/init.d/functions
 RETVAL=0
 
